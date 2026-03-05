@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block page_title %}{{ project.name }}{% endblock %}
+{% block nav_projects %}active{% endblock %}
+
+{% block content %}
+<!-- Project header -->
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h4 class="fw-bold mb-0">{{ project.name }}</h4>
+            <span class="badge {% if project.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ project.status }}
+            </span>
+        </div>
+        {% if project.description %}
+        <p class="text-muted mb-0">{{ project.description }}</p>
+        {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'task_create' project.pk %}" class="btn btn-info">
+            <i class="bi bi-plus-lg me-1"></i>Add Task
+        </a>
+        <a href="{% url 'project_edit' project.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil me-1"></i>Edit
+        </a>
+        <a href="{% url 'project_delete' project.pk %}" class="btn btn-outline-danger">
+            <i class="bi bi-trash me-1"></i>Delete
+        </a>
+    </div>
+</div>
+
+<!-- Progress summary -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between mb-2">
+            <span class="small fw-semibold">Overall Progress</span>
+            <span class="small text-muted">{{ project.done_count }} / {{ project.task_count }} tasks done ({{ project.completion_percent }}%)</span>
+        </div>
+        <div class="progress" style="height:8px;">
+            <div class="progress-bar bg-info" style="width:{{ project.completion_percent }}%;"></div>
+        </div>
+        <div class="d-flex gap-3 mt-2">
+            <small class="text-muted"><span class="badge bg-secondary" id="count-todo">{{ todo_tasks.count }}</span> To Do</small>
+            <small class="text-muted"><span class="badge bg-primary" id="count-in_progress">{{ in_progress_tasks.count }}</span> In Progress</small>
+            <small class="text-muted"><span class="badge bg-success" id="count-done">{{ done_tasks.count }}</span> Done</small>
+        </div>
+    </div>
+</div>
+
+<!-- Task columns (Kanban board) -->
+{% if tasks %}
+<div class="row g-3" id="kanban-board">
+
+    <!-- TO DO -->
+    <div class="col-md-4">
+        <div class="task-column-header text-secondary mb-2">
+            <i class="bi bi-circle me-1"></i>To Do (<span class="col-count">{{ todo_tasks.count }}</span>)
+        </div>
+        <div class="kanban-col rounded-3 p-2" data-status="todo" style="min-height:120px;">
+            {% for task in todo_tasks %}
+            {% include 'tasks/_task_card.html' %}
+            {% empty %}
+            <div class="empty-placeholder text-muted small text-center py-3 border rounded-3 bg-white">No tasks here</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- IN PROGRESS -->
+    <div class="col-md-4">
+        <div class="task-column-header text-primary mb-2">
+            <i class="bi bi-arrow-repeat me-1"></i>In Progress (<span class="col-count">{{ in_progress_tasks.count }}</span>)
+        </div>
+        <div class="kanban-col rounded-3 p-2" data-status="in_progress" style="min-height:120px;">
+            {% for task in in_progress_tasks %}
+            {% include 'tasks/_task_card.html' %}
+            {% empty %}
+            <div class="empty-placeholder text-muted small text-center py-3 border rounded-3 bg-white">No tasks here</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="col-md-4">
+        <div class="task-column-header text-success mb-2">
+            <i class="bi bi-check-circle me-1"></i>Done (<span class="col-count">{{ done_tasks.count }}</span>)
+        </div>
+        <div class="kanban-col rounded-3 p-2" data-status="done" style="min-height:120px;">
+            {% for task in done_tasks %}
+            {% include 'tasks/_task_card.html' %}
+            {% empty %}
+            <div class="empty-placeholder text-muted small text-center py-3 border rounded-3 bg-white">No tasks here</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+    <i class="bi bi-list-task text-muted" style="font-size:3rem;"></i>
+    <h5 class="mt-3 text-muted">No tasks yet</h5>
+    <a href="{% url 'task_create' project.pk %}" class="btn btn-info mt-2">
+        <i class="bi bi-plus-lg me-2"></i>Add First Task
+    </a>
+</div>
+{% endif %}
+
+<!-- ── Kanban drag-and-drop script ──────────────────────────── -->
+<style>
+.kanban-col { transition: background 0.15s; }
+.kanban-col.drag-over { background: rgba(13,202,240,0.1); border: 2px dashed #0dcaf0; }
+.card[draggable="true"] { cursor: grab; }
+.card[draggable="true"]:active { cursor: grabbing; opacity: 0.7; }
+</style>
+
+<script>
+(function () {
+    const CSRF = '{{ csrf_token }}';
+    let draggedCard = null;
+
+    // ── drag events on cards ────────────────────────────────
+    function initCards() {
+        document.querySelectorAll('.card[data-task-id]').forEach(card => {
+            card.addEventListener('dragstart', e => {
+                draggedCard = card;
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            card.addEventListener('dragend', () => {
+                draggedCard = null;
+                document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+            });
+        });
+    }
+
+    // ── drop events on columns ──────────────────────────────
+    document.querySelectorAll('.kanban-col').forEach(col => {
+        col.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            col.classList.add('drag-over');
+        });
+        col.addEventListener('dragleave', e => {
+            if (!col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+        });
+        col.addEventListener('drop', e => {
+            e.preventDefault();
+            col.classList.remove('drag-over');
+            if (!draggedCard) return;
+
+            const taskId = draggedCard.dataset.taskId;
+            const newStatus = col.dataset.status;
+
+            // Optimistic UI: move card to this column
+            const placeholder = col.querySelector('.empty-placeholder');
+            if (placeholder) placeholder.remove();
+            col.appendChild(draggedCard);
+
+            // Remove placeholder from source column if it's now empty (add one if needed)
+            document.querySelectorAll('.kanban-col').forEach(c => {
+                const cards = c.querySelectorAll('.card[data-task-id]');
+                const ph = c.querySelector('.empty-placeholder');
+                if (cards.length === 0 && !ph) {
+                    const div = document.createElement('div');
+                    div.className = 'empty-placeholder text-muted small text-center py-3 border rounded-3 bg-white';
+                    div.textContent = 'No tasks here';
+                    c.appendChild(div);
+                }
+            });
+
+            // Update column count badges
+            document.querySelectorAll('.kanban-col').forEach(c => {
+                const count = c.querySelectorAll('.card[data-task-id]').length;
+                const header = c.closest('[class^="col-"]') || c.parentElement;
+                const badge = header.querySelector('.col-count');
+                if (badge) badge.textContent = count;
+                // also update the summary badges
+                const summaryBadge = document.getElementById('count-' + c.dataset.status);
+                if (summaryBadge) summaryBadge.textContent = count;
+            });
+
+            // Persist to server via AJAX
+            fetch(`/tasks/${taskId}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF,
+                },
+                body: JSON.stringify({ status: newStatus }),
+            }).catch(() => {
+                // Silent fail — user can refresh to see real state
+            });
+        });
+    });
+
+    initCards();
+})();
+</script>
+
+{% endblock %}

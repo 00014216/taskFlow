@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-6">
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'project_list' %}">My Projects</a></li>
+        <li class="breadcrumb-item active">{{ action }} Project</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm form-card">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-folder-plus me-2 text-info"></i>{{ title }}
+        </h5>
+    </div>
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Project Name <span class="text-danger">*</span></label>
+                {{ form.name }}
+                {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Description</label>
+                {{ form.description }}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Status</label>
+                {{ form.status }}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-info">
+                    <i class="bi bi-check-lg me-2"></i>{{ action }} Project
+                </button>
+                {% if project %}
+                <a href="{% url 'project_detail' project.pk %}" class="btn btn-outline-secondary">Cancel</a>
+                {% else %}
+                <a href="{% url 'project_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+</div>
+</div>
+{% endblock %}
