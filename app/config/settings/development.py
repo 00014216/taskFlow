@@ -28,3 +28,6 @@ CACHES = {
 
 # Override session engine back to Database default since we disabled Redis session caching
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Use simple static files storage in development/tests (no manifest required)
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
