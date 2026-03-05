@@ -26,6 +26,7 @@ on:
     branches: [ main ]          # Run when code is pushed to main branch
   pull_request:
     branches: [ main ]          # Also run tests when a PR targets main
+  workflow_dispatch:            # Allow manual trigger from GitHub Actions UI
 
 # ── ENVIRONMENT VARIABLES ─────────────────────────────────────
 # Used across multiple jobs
