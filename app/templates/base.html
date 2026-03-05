@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TaskFlow{% endblock %} — Cloud Project Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body class="bg-light">
+
+{% if user.is_authenticated %}
+<!-- ═══ AUTHENTICATED LAYOUT — open ════════════════════════ -->
+<div class="d-flex" id="app-wrapper">
+
+    <!-- ── SIDEBAR ── -->
+    <nav id="sidebar" class="bg-dark text-white d-flex flex-column p-0">
+
+        <!-- Brand logo -->
+        <div class="sidebar-brand px-4 py-3 border-bottom border-secondary">
+            <a href="{% url 'dashboard' %}" class="text-white text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-kanban-fill text-info fs-4"></i>
+                <span class="fw-bold fs-5">TaskFlow</span>
+            </a>
+        </div>
+
+        <!-- Logged-in user -->
+        <div class="px-4 py-3 border-bottom border-secondary">
+            <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar bg-info text-dark fw-bold rounded-circle d-flex align-items-center justify-content-center">
+                    {{ user.username|first|upper }}
+                </div>
+                <div>
+                    <div class="small fw-semibold text-white">{{ user.username }}</div>
+                    <div class="text-muted" style="font-size:0.7rem;">Online</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <ul class="nav flex-column py-2 flex-grow-1">
+            <li class="nav-item">
+                <a class="nav-link sidebar-link px-4 py-2 {% block nav_dashboard %}{% endblock %}"
+                   href="{% url 'dashboard' %}">
+                    <i class="bi bi-grid-fill me-2"></i>Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sidebar-link px-4 py-2 {% block nav_projects %}{% endblock %}"
+                   href="{% url 'project_list' %}">
+                    <i class="bi bi-folder2-open me-2"></i>My Projects
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sidebar-link px-4 py-2 {% block nav_labels %}{% endblock %}"
+                   href="{% url 'label_list' %}">
+                    <i class="bi bi-tags-fill me-2"></i>Labels
+                </a>
+            </li>
+
+            <!-- System section -->
+            <li class="px-4 mt-3 mb-1">
+                <small class="text-muted text-uppercase" style="letter-spacing:1px;font-size:0.65rem;">System</small>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sidebar-link px-4 py-2" href="{% url 'api_tasks' %}" target="_blank">
+                    <i class="bi bi-braces me-2"></i>REST API
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link sidebar-link px-4 py-2" href="{% url 'health_check' %}" target="_blank">
+                    <i class="bi bi-heart-pulse-fill me-2"></i>Health Check
+                </a>
+            </li>
+            {% if user.is_staff %}
+            <li class="nav-item">
+                <a class="nav-link sidebar-link px-4 py-2" href="{% url 'admin:index' %}">
+                    <i class="bi bi-shield-lock-fill me-2"></i>Admin Panel
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <!-- Logout -->
+        <div class="px-3 py-3 border-top border-secondary">
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                    <i class="bi bi-box-arrow-left me-2"></i>Logout
+                </button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- ── MAIN CONTENT AREA ── -->
+    <div id="main-content" class="flex-grow-1 d-flex flex-column">
+
+        <!-- Top bar -->
+        <div class="topbar bg-white border-bottom px-4 py-2 d-flex justify-content-between align-items-center shadow-sm">
+            <span class="text-muted small fw-semibold">{% block page_title %}{% endblock %}</span>
+            <a href="{% url 'project_create' %}" class="btn btn-sm btn-info">
+                <i class="bi bi-plus-lg me-1"></i>New Project
+            </a>
+        </div>
+
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="px-4 pt-3">
+            {% for message in messages %}
+            <div class="alert alert-success alert-dismissible fade show py-2 mb-0" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Page body — block content starts here for authenticated users -->
+        <div class="p-4 flex-grow-1">
+{% else %}
+<!-- ═══ PUBLIC LAYOUT — open ════════════════════════════════ -->
+<nav class="navbar navbar-dark bg-dark px-4 py-2 shadow-sm">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'landing' %}">
+        <i class="bi bi-kanban-fill text-info fs-4"></i>
+        <span class="fw-bold">TaskFlow</span>
+    </a>
+    <div class="d-flex gap-2">
+        <a href="{% url 'login' %}" class="btn btn-sm btn-outline-light">Sign In</a>
+        <a href="{% url 'register' %}" class="btn btn-sm btn-info">Get Started</a>
+    </div>
+</nav>
+
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- block content starts here for public users -->
+<main>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+{% if user.is_authenticated %}
+        </div><!-- end .p-4 -->
+    </div><!-- end #main-content -->
+</div><!-- end #app-wrapper -->
+{% else %}
+</main>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
