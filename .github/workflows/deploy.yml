@@ -1,0 +1,216 @@
+# ─────────────────────────────────────────────────────────────
+# GitHub Actions CI/CD Pipeline for CloudBlog
+# ─────────────────────────────────────────────────────────────
+#
+# CI/CD = Continuous Integration / Continuous Deployment
+#
+# What this does in plain English:
+# Every time you push code to GitHub (specifically the 'main' branch):
+#   1. TEST   - Automatically run all tests to check nothing is broken
+#   2. BUILD  - Package the application into a Docker image
+#   3. DEPLOY - Upload the image and update the live server
+#
+# If tests fail → the code is NOT deployed (safe!)
+# If tests pass → the code is automatically live within minutes
+#
+# GitHub runs this on their servers (ubuntu-latest) - you don't need to
+# install anything extra on your computer.
+# ─────────────────────────────────────────────────────────────
+
+name: CI/CD Pipeline
+
+# ── TRIGGERS ─────────────────────────────────────────────────
+# When does this pipeline run?
+on:
+  push:
+    branches: [ main ]          # Run when code is pushed to main branch
+  pull_request:
+    branches: [ main ]          # Also run tests when a PR targets main
+
+# ── ENVIRONMENT VARIABLES ─────────────────────────────────────
+# Used across multiple jobs
+env:
+  # The Docker image name: username/cloudblog
+  # ${{ secrets.DOCKER_USERNAME }} reads from GitHub Secrets (Settings → Secrets)
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/cloudblog
+
+# ── JOBS ─────────────────────────────────────────────────────
+# Jobs run in the order specified by 'needs:'
+# test → build → deploy (each waits for the previous to pass)
+jobs:
+
+  # ════════════════════════════════════════════════════════════
+  # JOB 1: TEST
+  # Runs on every push and every pull request
+  # ════════════════════════════════════════════════════════════
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    # ── Service Containers ────────────────────────────────────
+    # GitHub spins up a PostgreSQL container just for testing
+    # It's automatically torn down when tests finish
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_cloudblog
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      # Step 1: Download our code onto the GitHub runner
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          # Cache pip downloads for faster runs
+          cache: 'pip'
+          cache-dependency-path: 'app/requirements.txt'
+
+      # Step 3: Install all Python packages
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+
+      # Step 4: Run flake8 linting
+      # Flake8 checks for code style issues (too-long lines, unused imports, etc.)
+      - name: Run flake8 linting
+        run: |
+          flake8 app/ \
+            --max-line-length=120 \
+            --exclude=app/tasks/migrations/,app/manage.py \
+            --extend-ignore=E501
+
+      # Step 5: Run pytest tests
+      - name: Run Django tests with pytest
+        env:
+          # Point Django at the test PostgreSQL service
+          DJANGO_SECRET_KEY: test-secret-key-not-for-production
+          DJANGO_DEBUG: 'True'
+          DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+          POSTGRES_DB: test_cloudblog
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: '5432'
+          REDIS_URL: redis://localhost:6379/1
+          DJANGO_SETTINGS_MODULE: config.settings.development
+        run: |
+          cd app
+          pytest --tb=short -v
+
+  # ════════════════════════════════════════════════════════════
+  # JOB 2: BUILD
+  # Only runs if tests passed AND only on pushes to main (not PRs)
+  # ════════════════════════════════════════════════════════════
+  build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test    # Only run if 'test' job succeeded
+    # Only build when pushing to main, NOT for pull requests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 1: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          # Note: DOCKERHUB_TOKEN should be an Access Token, not your actual password!
+          # Create one at: Docker Hub → Account Settings → Security → Access Tokens
+
+      # Step 2: Set up Docker Buildx (for multi-platform builds and caching)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Build the Docker image and push to Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: true
+          # Tag the image with TWO tags:
+          # :latest - always points to the newest build
+          # :abc1234 - the git commit hash (for rollback!)
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+          # Use layer caching to speed up builds
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ════════════════════════════════════════════════════════════
+  # JOB 3: DEPLOY
+  # Only runs if build succeeded AND only on pushes to main
+  # ════════════════════════════════════════════════════════════
+  deploy:
+    name: Deploy to Azure VM
+    runs-on: ubuntu-latest
+    needs: build    # Only run if 'build' job succeeded
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      # Step 1: SSH into the Azure VM and run deployment commands
+      - name: Deploy to Azure VM via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # These commands run ON the Azure VM (not on GitHub's server)
+          script: |
+            # Navigate to the project folder
+            cd ~/taskFlow
+
+            # Pull the latest code (for nginx.conf and docker-compose updates)
+            git pull origin main
+
+            # Download the new Docker image from Docker Hub
+            docker compose -f docker-compose.prod.yml pull
+
+            # Stop old containers cleanly before restarting with new image
+            docker compose -f docker-compose.prod.yml down --remove-orphans
+
+            # Start all containers with the new image
+            docker compose -f docker-compose.prod.yml up -d
+
+            # Run database migrations (safe to run even if no new migrations)
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate
+
+            # Collect static files into the shared volume for Nginx
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput
+
+            # Remove old/unused Docker images to free up disk space
+            docker image prune -f
+
+            # Print a success message
+            echo "Deployment completed successfully at $(date)"
+            echo "   Image: ${{ env.DOCKER_IMAGE }}:${{ github.sha }}"
