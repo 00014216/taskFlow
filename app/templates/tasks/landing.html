@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<!-- ── HERO ── -->
+<div class="hero-bg d-flex flex-column align-items-center justify-content-center text-white text-center px-3 py-5">
+    <div style="max-width:680px;">
+        <div class="mb-4">
+            <i class="bi bi-kanban-fill text-info" style="font-size:4rem;"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-3">TaskFlow</h1>
+        <p class="lead text-light opacity-75 mb-4">
+            A cloud-native project &amp; task management platform.<br>
+            Built with Django, Docker, PostgreSQL, Redis, and GitHub Actions.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap mb-5">
+            <a href="{% url 'register' %}" class="btn btn-info btn-lg px-4">
+                <i class="bi bi-person-plus me-2"></i>Get Started — it's free
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </a>
+        </div>
+
+        <!-- Tech stack badges -->
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-3 py-2">Django 4.2</span>
+            <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-2">Docker</span>
+            <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 px-3 py-2">PostgreSQL</span>
+            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 px-3 py-2">Redis</span>
+            <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 px-3 py-2">Nginx</span>
+            <span class="badge bg-light bg-opacity-25 text-light border border-light border-opacity-25 px-3 py-2">GitHub Actions CI/CD</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<div class="bg-white py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">User Authentication</h6>
+                        <p class="text-muted small mb-0">Register, login, logout. Session stored in Redis. Login required for all data pages.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-database-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">3 Models + Relationships</h6>
+                        <p class="text-muted small mb-0">Label, Project, Task. Many-to-One (Task→Project) and Many-to-Many (Task↔Label) relationships.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">Full CRUD Operations</h6>
+                        <p class="text-muted small mb-0">Create, Read, Update, and Delete for both Projects and Tasks — with confirmation dialogs.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">Redis Caching</h6>
+                        <p class="text-muted small mb-0">Dashboard stats cached for 2 minutes. Cache invalidated on data changes. Sessions in Redis.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">Health Check Endpoint</h6>
+                        <p class="text-muted small mb-0"><code>/health/</code> tests DB and Redis connectivity, returns JSON status for monitoring.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-secondary bg-opacity-10 text-secondary">
+                        <i class="bi bi-braces"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">REST API</h6>
+                        <p class="text-muted small mb-0"><code>/api/tasks/</code> returns paginated JSON. Supports search and ordering. Auth required.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── FOOTER / CTA ── -->
+<div class="bg-dark text-white py-4">
+    <div class="container d-flex flex-column flex-sm-row align-items-center justify-content-between gap-3">
+        <p class="mb-0 text-muted small">
+            <i class="bi bi-kanban-fill text-info me-2"></i>
+            <strong class="text-white">TaskFlow</strong> — Built with Django &bull; Docker &bull; PostgreSQL &bull; Redis &bull; GitHub Actions &bull; Azure
+        </p>
+        <div class="d-flex gap-2">
+            <a href="{% url 'login' %}" class="btn btn-sm btn-outline-light">Sign In</a>
+            <a href="{% url 'register' %}" class="btn btn-sm btn-info">Get Started</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+
+<!-- ── STAT CARDS ── -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="feature-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <div>
+                    <div class="h3 fw-bold mb-0">{{ total_projects }}</div>
+                    <div class="text-muted small">Projects</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="feature-icon bg-secondary bg-opacity-10 text-secondary">
+                    <i class="bi bi-list-task"></i>
+                </div>
+                <div>
+                    <div class="h3 fw-bold mb-0">{{ total_tasks }}</div>
+                    <div class="text-muted small">Total Tasks</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="feature-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div>
+                    <div class="h3 fw-bold mb-0">{{ in_progress_tasks }}</div>
+                    <div class="text-muted small">In Progress</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="feature-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div>
+                    <div class="h3 fw-bold mb-0">{{ done_tasks }}</div>
+                    <div class="text-muted small">Completed</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── PROJECTS ── -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">My Projects</h5>
+    <a href="{% url 'project_create' %}" class="btn btn-sm btn-outline-info">
+        <i class="bi bi-plus me-1"></i>New Project
+    </a>
+</div>
+
+{% if projects %}
+<div class="row g-3">
+    {% for project in projects %}
+    <div class="col-md-6 col-xl-4">
+        <a href="{% url 'project_detail' project.pk %}" class="text-decoration-none">
+            <div class="card project-card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="card-title fw-bold text-dark mb-0">{{ project.name }}</h6>
+                        <span class="badge {% if project.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+                            {{ project.status }}
+                        </span>
+                    </div>
+                    {% if project.description %}
+                    <p class="text-muted small mb-3">{{ project.description|truncatewords:15 }}</p>
+                    {% endif %}
+
+                    <!-- Progress bar -->
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="text-muted fw-semibold">{{ project.completion_percent }}%</small>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width:{{ project.completion_percent }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <span class="badge bg-light text-dark border">
+                            <i class="bi bi-list-task me-1"></i>{{ project.task_count }} task{{ project.task_count|pluralize }}
+                        </span>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">
+                            <i class="bi bi-check me-1"></i>{{ project.done_count }} done
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-top py-2">
+                    <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ project.created_at|date:"d M Y" }}</small>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- Empty state — guides assessor to create first project -->
+<div class="text-center py-5">
+    <i class="bi bi-folder2 text-muted" style="font-size:3rem;"></i>
+    <h5 class="mt-3 text-muted">No projects yet</h5>
+    <p class="text-muted">Create your first project to get started.</p>
+    <a href="{% url 'project_create' %}" class="btn btn-info">
+        <i class="bi bi-plus-lg me-2"></i>Create Your First Project
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}
