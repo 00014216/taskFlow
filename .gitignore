@@ -1,0 +1,54 @@
+# ─────────────────────────────────────────────────────────────
+# .gitignore - Files Git should NOT track
+# ─────────────────────────────────────────────────────────────
+# This file tells Git to ignore certain files/folders.
+# Files in this list will never be accidentally committed.
+
+# ── Secret Files ──────────────────────────────────────────
+# .env contains passwords and secret keys - NEVER commit this!
+.env
+*.env
+
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+
+# ── Virtual Environments ──────────────────────────────────
+venv/
+env/
+.venv/
+ENV/
+
+# ── Django ────────────────────────────────────────────────
+# SQLite database (we use PostgreSQL, but just in case)
+db.sqlite3
+# Collected static files (generated, not source code)
+staticfiles/
+media/
+# Django migrations backup
+*.orig
+
+# ── Testing ────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+
+# ── IDE / Editor ──────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Docker ────────────────────────────────────────────────
+# Docker override file (local customisations)
+docker-compose.override.yml
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+logs/

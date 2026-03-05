@@ -1,0 +1,33 @@
+# Files to exclude from the Docker build context
+# Keeping these out reduces build time and image size
+
+.env
+.git
+.gitignore
+.dockerignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Documentation
+*.md
+module_materials/
+
+# Logs
+*.log
