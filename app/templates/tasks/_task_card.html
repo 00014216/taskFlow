@@ -2,9 +2,12 @@
 <div class="card task-row shadow-sm mb-2" draggable="true" data-task-id="{{ task.pk }}">
     <div class="card-body py-2 px-3">
         <div class="d-flex justify-content-between align-items-start">
-            <a href="{% url 'task_detail' task.pk %}" class="text-decoration-none text-dark fw-semibold small">
-                {{ task.title }}
-            </a>
+            <div class="d-flex align-items-center gap-1">
+                <i class="bi bi-grip-vertical text-muted drag-handle" style="font-size:0.8rem; cursor:grab;"></i>
+                <a href="{% url 'task_detail' task.pk %}" class="text-decoration-none text-dark fw-semibold small">
+                    {{ task.title }}
+                </a>
+            </div>
             <div class="d-flex gap-1 ms-2">
                 <a href="{% url 'task_edit' task.pk %}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size:0.7rem;">
                     <i class="bi bi-pencil"></i>
