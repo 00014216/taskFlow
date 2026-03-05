@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height:80vh;">
+<div class="col-sm-10 col-md-7 col-lg-5">
+
+    <div class="text-center mb-4">
+        <i class="bi bi-kanban-fill text-info" style="font-size:2.5rem;"></i>
+        <h4 class="fw-bold mt-2 mb-0">Create your account</h4>
+        <p class="text-muted small">Start managing projects for free</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger py-2 small">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="id_username" class="form-label fw-semibold small">Username <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                    <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                    {% endif %}
+                    <div class="form-text">{{ form.username.help_text }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_email" class="form-label fw-semibold small">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                        {{ form.email }}
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                        {{ form.password1 }}
+                    </div>
+                    {% if form.password1.errors %}
+                    <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_password2" class="form-label fw-semibold small">Confirm Password <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-lock-fill"></i></span>
+                        {{ form.password2 }}
+                    </div>
+                    {% if form.password2.errors %}
+                    <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-info w-100 fw-semibold">
+                    <i class="bi bi-person-check me-2"></i>Create Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <p class="text-center text-muted small mt-3">
+        Already have an account?
+        <a href="{% url 'login' %}" class="text-info fw-semibold">Sign in</a>
+    </p>
+
+</div>
+</div>
+{% endblock %}
