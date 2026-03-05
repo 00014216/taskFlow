@@ -106,7 +106,7 @@ class LandingPageTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_landing_redirects_authenticated_user(self):
-        user = User.objects.create_user('u', password='p')
+        User.objects.create_user('u', password='p')
         self.client.login(username='u', password='p')
         response = self.client.get(reverse('landing'))
         self.assertRedirects(response, reverse('dashboard'))
@@ -176,7 +176,7 @@ class ProjectCRUDTest(TestCase):
         self.assertFalse(Project.objects.filter(pk=self.project.pk).exists())
 
     def test_other_user_cannot_access_project(self):
-        other = User.objects.create_user('other', password='pass123')
+        User.objects.create_user('other', password='pass123')
         self.client.login(username='other', password='pass123')
         response = self.client.get(reverse('project_detail', args=[self.project.pk]))
         self.assertEqual(response.status_code, 404)

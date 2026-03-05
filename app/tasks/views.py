@@ -36,6 +36,10 @@ from django.views.decorators.http import require_POST
 from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
 
+from .models import Project, Task, Label
+from .forms import ProjectForm, TaskForm, LabelForm, RegisterForm
+from .serializers import TaskSerializer
+
 # Colour palette offered on the Labels page (hex, friendly name)
 LABEL_PALETTE = [
     ('#e74c3c', 'Red'),
@@ -49,10 +53,6 @@ LABEL_PALETTE = [
     ('#607d8b', 'Grey'),
     ('#795548', 'Brown'),
 ]
-
-from .models import Project, Task, Label
-from .forms import ProjectForm, TaskForm, LabelForm, RegisterForm
-from .serializers import TaskSerializer
 
 
 # ─────────────────────────────────────────────────────────────

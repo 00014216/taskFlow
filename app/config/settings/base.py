@@ -3,7 +3,7 @@ Base settings shared by all environments (development and production).
 This file contains settings that never change regardless of where the app runs.
 """
 from pathlib import Path
-from decouple import config, Csv
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -15,7 +15,7 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 INSTALLED_APPS = [
     'django.contrib.admin',        # Admin panel
     'django.contrib.auth',         # User login/register
-    'django.contrib.contenttypes', # Database content types
+    'django.contrib.contenttypes',  # Database content types
     'django.contrib.sessions',     # User sessions (stored in Redis)
     'django.contrib.messages',     # Flash messages (success/error alerts)
     'django.contrib.staticfiles',  # Static files (CSS, images)

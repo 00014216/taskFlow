@@ -42,7 +42,7 @@ class TaskAdmin(admin.ModelAdmin):
     raw_id_fields = ['project', 'created_by']
 
     def label_list(self, obj):
-        return ', '.join(l.name for l in obj.labels.all())
+        return ', '.join(lbl.name for lbl in obj.labels.all())
     label_list.short_description = 'Labels'
 
 
