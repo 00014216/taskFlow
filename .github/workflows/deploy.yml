@@ -131,8 +131,8 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: test    # Only run if 'test' job succeeded
-    # Only build when pushing to main, NOT for pull requests
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Only build when pushing to main or manually triggered, NOT for pull requests
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
 
     steps:
       - name: Checkout code
@@ -176,7 +176,7 @@ jobs:
     name: Deploy to Azure VM
     runs-on: ubuntu-latest
     needs: build    # Only run if 'build' job succeeded
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
 
     steps:
       # Step 1: SSH into the Azure VM and run deployment commands
