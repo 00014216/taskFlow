@@ -173,7 +173,7 @@ jobs:
   # Only runs if build succeeded AND only on pushes to main
   # ════════════════════════════════════════════════════════════
   deploy:
-    name: Deploy to Azure VM
+    name: Deploy to Eskiz VM
     runs-on: ubuntu-latest
     needs: build    # Only run if 'build' job succeeded
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
