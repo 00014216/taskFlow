@@ -54,13 +54,7 @@ services:
     # GitHub Actions replaces YOUR_DOCKERHUB_USERNAME automatically via secrets
     image: ${DOCKERHUB_USERNAME}/cloudblog:latest
     container_name: cloudblog_web
-    command: >
-      sh -c "python manage.py collectstatic --noinput &&
-             gunicorn config.wsgi:application
-             --bind 0.0.0.0:8000
-             --workers 3
-             --timeout 120
-             --access-logfile -"
+    command: sh -c "python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile -"
     volumes:
       # Share static files with Nginx
       - static_files:/app/staticfiles
