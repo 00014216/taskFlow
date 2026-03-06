@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if action == 'Edit' %}Edit Post{% else %}Write New Post{% endif %} - CloudBlog{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-pencil-square me-2"></i>
+                {% if action == 'Edit' %}Edit Post{% else %}Write a New Post{% endif %}
+            </div>
+            <div class="card-body p-4">
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Title field -->
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+                            <i class="bi bi-type-h1 me-2"></i>Title
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                        <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Category dropdown -->
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">
+                            <i class="bi bi-tag me-2"></i>Category
+                        </label>
+                        {{ form.category }}
+                        {% if form.category.errors %}
+                        <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Body field -->
+                    <div class="mb-3">
+                        <label for="{{ form.body.id_for_label }}" class="form-label fw-semibold">
+                            <i class="bi bi-body-text me-2"></i>Article Content
+                        </label>
+                        {{ form.body }}
+                        {% if form.body.errors %}
+                        <div class="text-danger small mt-1">{{ form.body.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Published checkbox -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.published }}
+                            <label class="form-check-label" for="{{ form.published.id_for_label }}">
+                                <i class="bi bi-globe me-2"></i>Publish immediately
+                                <small class="text-muted">(uncheck to save as draft)</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-info">
+                            <i class="bi bi-check-lg me-2"></i>
+                            {% if action == 'Edit' %}Save Changes{% else %}Publish Post{% endif %}
+                        </button>
+                        <a href="{% url 'post_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg me-2"></i>Cancel
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

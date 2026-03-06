@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - CloudBlog{% endblock %}
+
+{% block content %}
+<div class="row">
+
+    <!-- ─── MAIN ARTICLE ─── -->
+    <div class="col-lg-8">
+
+        <!-- Breadcrumb navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'post_list' %}">Home</a></li>
+                {% if post.category %}
+                <li class="breadcrumb-item">
+                    <a href="{% url 'post_list' %}?category={{ post.category.slug }}">
+                        {{ post.category.name }}
+                    </a>
+                </li>
+                {% endif %}
+                <li class="breadcrumb-item active">{{ post.title|truncatewords:5 }}</li>
+            </ol>
+        </nav>
+
+        <!-- Article -->
+        <article class="card shadow-sm mb-4">
+            <div class="card-body p-4 p-lg-5">
+
+                <!-- Category badge -->
+                {% if post.category %}
+                <span class="badge bg-info text-dark mb-2">
+                    <i class="bi bi-tag me-1"></i>{{ post.category.name }}
+                </span>
+                {% endif %}
+
+                <!-- Title -->
+                <h1 class="card-title mb-3">{{ post.title }}</h1>
+
+                <!-- Metadata row -->
+                <div class="d-flex flex-wrap gap-3 text-muted small mb-4 pb-3 border-bottom">
+                    <span><i class="bi bi-person me-1"></i>{{ post.author.username }}</span>
+                    <span><i class="bi bi-calendar me-1"></i>{{ post.created_at|date:"d F Y, H:i" }}</span>
+                    <span><i class="bi bi-eye me-1"></i>{{ view_count }} view{{ view_count|pluralize }}</span>
+                    <span><i class="bi bi-chat me-1"></i>{{ post.get_comment_count }} comment{{ post.get_comment_count|pluralize }}</span>
+                </div>
+
+                <!-- Article body - |linebreaks converts newlines to <p> tags -->
+                <div class="article-body">
+                    {{ post.body|linebreaks }}
+                </div>
+
+            </div>
+
+            <!-- Edit button (only shown to the post's author) -->
+            {% if user == post.author %}
+            <div class="card-footer bg-light">
+                <a href="{% url 'post_edit' post.slug %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-pencil me-1"></i>Edit this post
+                </a>
+            </div>
+            {% endif %}
+        </article>
+
+        <!-- ─── COMMENTS SECTION ─── -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-chat-dots me-2"></i>
+                Comments ({{ post.get_comment_count }})
+            </div>
+            <div class="card-body">
+
+                <!-- Existing comments -->
+                {% if comments %}
+                    {% for comment in comments %}
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="avatar-circle bg-info text-white d-flex align-items-center justify-content-center">
+                                {{ comment.author.username|first|upper }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ comment.author.username }}</strong>
+                                <small class="text-muted">{{ comment.created_at|date:"d M Y, H:i" }}</small>
+                            </div>
+                            <p class="mb-0 mt-1">{{ comment.body }}</p>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}<hr>{% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-chat me-2"></i>No comments yet. Be the first to comment!
+                    </p>
+                {% endif %}
+
+                <!-- Add comment form -->
+                {% if user.is_authenticated %}
+                <hr>
+                <h6 class="mb-3"><i class="bi bi-reply me-2"></i>Leave a comment</h6>
+                <form method="post" action="{% url 'comment_add' post.slug %}">
+                    {% csrf_token %}
+                    {{ form.body }}
+                    <button type="submit" class="btn btn-info mt-2">
+                        <i class="bi bi-send me-2"></i>Post Comment
+                    </button>
+                </form>
+                {% else %}
+                <hr>
+                <p class="text-muted mb-0">
+                    <a href="{% url 'login' %}">Log in</a> to leave a comment.
+                </p>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ─── SIDEBAR ─── -->
+    <div class="col-lg-4">
+
+        <!-- Author info -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                <i class="bi bi-person-circle me-2"></i>About the Author
+            </div>
+            <div class="card-body text-center">
+                <div class="avatar-large bg-info text-white d-flex align-items-center justify-content-center mx-auto mb-3">
+                    {{ post.author.username|first|upper }}
+                </div>
+                <h6>{{ post.author.username }}</h6>
+                <p class="text-muted small">
+                    Member since {{ post.author.date_joined|date:"F Y" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Back button -->
+        <div class="d-grid gap-2">
+            <a href="{% url 'post_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>Back to all posts
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'post_create' %}" class="btn btn-info">
+                <i class="bi bi-pencil-square me-2"></i>Write a post
+            </a>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
