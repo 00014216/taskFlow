@@ -19,7 +19,7 @@ from django.db import connection
 from django.http import JsonResponse
 from rest_framework import generics, filters
 
-from .models import Post, Category, Comment
+from .models import Post, Category
 from .forms import PostForm, CommentForm, RegisterForm
 from .serializers import PostSerializer
 
@@ -95,7 +95,7 @@ def post_detail(request, slug):
     """
     from django.http import Http404
     post = get_object_or_404(Post, slug=slug)
-    
+
     if not post.published and request.user != post.author:
         raise Http404("No Post matches the given query.")
 
