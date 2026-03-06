@@ -47,7 +47,7 @@
 
     **Dockerfile — Multi-Stage Build**
 
-    The Dockerfile uses two stages. The first stage is called `builder`. It installs all Python packages using pip. The second stage is the runtime image. It copies only the installed packages from the builder stage into a clean `python:3.11-slim` base image. This approach keeps the final image small. Build tools and pip itself are not included in the production image. The resulting image is approximately 180MB, which is under the 200MB requirement.
+    The Dockerfile uses two stages. The first stage is called `builder`. It installs all Python packages using pip. The second stage is the runtime image. It copies only the installed packages from the builder stage into a clean `python:3.11-slim` base image. This approach keeps the final image small. Build tools and pip itself are not included in the production image. The resulting image is approximately 67MB, which is well under the 200MB requirement.
 
     The container runs as a non-root user called `appuser`. This is a security measure. If someone were to exploit a vulnerability in the application, they would not have root access to the host system.
 
@@ -149,12 +149,22 @@
 
     [SCREENSHOT: GitHub repository Settings → Secrets and variables → Actions showing all five secrets]
 
-    [SCREENSHOT: GitHub Actions page showing pipeline run #14 with all three jobs green]
+    [SCREENSHOT: GitHub Actions page showing pipeline run #17 with all three jobs green]
 
     ---
 
     ## E. Challenges and Solutions
     *(Target: 200 words — typed)*
+
+    Before the technical challenges, the first obstacle was selecting a cloud provider. My initial plan was to use Microsoft Azure, as covered in the Week 5 seminar. I registered with my university email and had $100 in credits, but Azure would not allow me to create a virtual machine in any of the regions shown in the seminar, or in any of the other five permitted regions listed in the account settings. The requests were blocked due to regional restrictions with no clear resolution.
+
+    I then attempted to register with AWS. The account was created but SMS verification for account activation never arrived, despite multiple attempts, so I could not proceed.
+
+    My third attempt was with Eskiz.uz, a local cloud provider. During registration, a step appeared requiring me to verify identity through OneID. I contacted Eskiz support, and they informed me that the process required submitting significantly more personal information than a standard ID — I was not comfortable sharing this. The registration was abandoned.
+
+    I then used Hostinger KVM VPS, which required only standard payment details and was set up within minutes.
+
+    [SCREENSHOT: Eskiz.uz registration page showing the excessive personal information requirement]
 
     The biggest challenge was getting the CI/CD pipeline to run correctly. The first time I pushed the code, flake8 failed with seven different errors. Some were obvious, like an unused import. Others were less clear — for example, E402 means a module-level import is not at the top of the file. I had accidentally placed the import statements below a constant definition. I fixed each error by reading the flake8 documentation carefully.
 
@@ -185,7 +195,7 @@
 
     **Commit History**
 
-    The repository contains over 25 commits on the `main` branch. A feature branch `feature/kanban-drag-drop` was created for the Kanban board functionality and merged into `main` via a pull request. Commits follow a consistent format using prefixes: `feat:`, `fix:`, `ci:`, `docs:`.
+    The repository contains over 25 commits on the `main` branch. A feature branch `feature/kanban-drag-drop` was created for the Kanban board functionality and its commits were merged into `main`. Commits follow a consistent format using prefixes: `feat:`, `fix:`, `ci:`, `docs:`.
 
     [SCREENSHOT: GitHub commits page — scroll to show all commits with timestamps and messages]
 
@@ -205,7 +215,7 @@
 
     [SCREENSHOT: GitHub Actions page showing multiple successful pipeline runs with green checkmarks]
 
-    [SCREENSHOT: Expanded view of pipeline run #14 showing all three jobs — Run Tests ✅, Build and Push Docker Image ✅, Deploy to Hostinger VPS ✅ — all green]
+    [SCREENSHOT: Expanded view of pipeline run #17 showing all three jobs — Run Tests ✅, Build and Push Docker Image ✅, Deploy to Hostinger VPS ✅ — all green]
 
     ---
 
