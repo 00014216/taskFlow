@@ -1,17 +1,3 @@
-"""
-Tests for TaskFlow.
-
-Run with: docker compose exec web pytest
-All tests must pass before GitHub Actions deploys to production.
-
-We test:
-- Models (str methods, relationships)
-- Views (status codes, redirects, permissions)
-- CRUD operations (create, read, update, delete)
-- Health check (database + Redis)
-- REST API
-- Authentication (login required redirects)
-"""
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -67,10 +53,6 @@ class TaskModelTest(TestCase):
         self.assertEqual(str(task), 'Fix the bug')
 
     def test_task_many_to_many_labels(self):
-        """
-        Tests the M2M relationship: one task can have multiple labels,
-        and one label can be on multiple tasks.
-        """
         bug_label = Label.objects.create(name='Bug', color='#dc3545')
         urgent_label = Label.objects.create(name='Urgent', color='#ffc107')
 
@@ -82,7 +64,6 @@ class TaskModelTest(TestCase):
         self.assertEqual(task.labels.count(), 2)
         self.assertIn(bug_label, task.labels.all())
         self.assertIn(urgent_label, task.labels.all())
-        # Reverse: label can access all tasks that use it
         self.assertIn(task, bug_label.tasks.all())
 
     def test_task_status_badge_color(self):
@@ -199,7 +180,6 @@ class TaskCRUDTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_create_task_with_labels(self):
-        """Tests full task creation including Many-to-Many label assignment."""
         response = self.client.post(
             reverse('task_create', args=[self.project.pk]),
             {
@@ -207,7 +187,7 @@ class TaskCRUDTest(TestCase):
                 'description': 'Testing M2M',
                 'status': Task.STATUS_TODO,
                 'priority': Task.PRIORITY_HIGH,
-                'labels': [self.label.pk],  # M2M field
+                'labels': [self.label.pk],
             }
         )
         self.assertEqual(response.status_code, 302)

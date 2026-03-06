@@ -1,7 +1,3 @@
-"""
-Django Admin configuration for TaskFlow.
-Visit /admin/ after creating a superuser to manage all data.
-"""
 from django.contrib import admin
 from .models import Label, Project, Task
 
@@ -37,7 +33,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['title', 'project', 'created_by', 'status', 'priority', 'label_list', 'due_date']
     list_filter = ['status', 'priority', 'created_at']
     search_fields = ['title', 'description', 'project__name']
-    filter_horizontal = ['labels']   # Nice widget for Many-to-Many in admin
+    filter_horizontal = ['labels']
     list_editable = ['status', 'priority']
     raw_id_fields = ['project', 'created_by']
 

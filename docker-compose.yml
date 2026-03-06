@@ -1,46 +1,24 @@
-# ─────────────────────────────────────────────────────────────
-# docker-compose.yml — DEVELOPMENT ENVIRONMENT
-# ─────────────────────────────────────────────────────────────
-#
-# Docker Compose lets you run multiple containers with one command.
-# "docker compose up -d" starts ALL these services together.
-#
-# This file is for LOCAL DEVELOPMENT only.
-# For production, see docker-compose.prod.yml
-#
-# Services:
-#   db    - PostgreSQL database
-#   redis - Redis cache
-#   web   - Django application
-# ─────────────────────────────────────────────────────────────
-
 version: '3.8'
 
 services:
 
-  # ── PostgreSQL Database ────────────────────────────────────
   db:
     image: postgres:15-alpine
-    # 'alpine' means the smallest possible version (~70MB vs ~400MB)
     container_name: cloudblog_db
     volumes:
-      # Named volume: data persists even when container is stopped/deleted
       - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-cloudblog_db}
       POSTGRES_USER: ${POSTGRES_USER:-cloudblog_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      # HOST:CONTAINER - you can connect from your computer on port 5432
       - "5432:5432"
     healthcheck:
-      # This checks if PostgreSQL is ready before starting Django
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cloudblog_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ── Redis Cache ────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: cloudblog_redis
@@ -48,7 +26,6 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    # Enable persistence so cache survives restarts
     command: redis-server --appendonly yes
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -56,33 +33,26 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── Django Web Application ─────────────────────────────────
   web:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: cloudblog_web
-    # Development command: runserver for live code reload
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      # Mount source code - changes appear instantly without rebuilding
       - ./app:/app
     ports:
       - "8000:8000"
     env_file:
-      # Load environment variables from .env file
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.development
     depends_on:
       db:
-        # Wait until PostgreSQL is actually ready (not just started)
         condition: service_healthy
       redis:
         condition: service_healthy
 
-# ── Named Volumes ───────────────────────────────────────────
-# Named volumes persist data between container restarts
 volumes:
   postgres_data:
     driver: local
